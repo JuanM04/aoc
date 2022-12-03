@@ -1,0 +1,9 @@
+{
+  "deno.enable": true,
+  "github.copilot.enable": {
+    "*": false,
+    "yaml": false,
+    "plaintext": false,
+    "markdown": false
+  }
+}
