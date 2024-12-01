@@ -1,5 +1,5 @@
 {
-  "deno.enable": true,
+  "deno.enablePaths": ["./2015", "./2022"],
   "github.copilot.enable": {
     "*": false,
     "yaml": false,
