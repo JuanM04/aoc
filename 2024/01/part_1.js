@@ -1,7 +1,9 @@
-const input = await Bun.file("./input.txt").text();
+import { readFile } from "node:fs/promises";
 
-const left: number[] = [];
-const right: number[] = [];
+const input = await readFile("./input.txt", { encoding: "utf-8" });
+
+const left = [];
+const right = [];
 
 input.split("\n").forEach((row) => {
   if (row.length === 0) return;
