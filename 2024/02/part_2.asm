@@ -1,9 +1,8 @@
 ; ----------------------------------------------------------------------------------------
-; This is a Win64 console program.
-; It uses puts from the C library.
+; This is a Win64 console program. It uses standard C libraries.
 ; 
 ; To assemble and run:
-;     nasm -fwin64 part_2.asm && gcc part_2.obj && a
+;     nasm -fwin64 part_2.asm && gcc part_2.obj && .\a.exe
 ;
 ; NASM tutorial:
 ;     https://cs.lmu.edu/~ray/notes/nasmtutorial/
