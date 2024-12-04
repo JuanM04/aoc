@@ -3,7 +3,7 @@
 ; It uses puts from the C library.
 ; 
 ; To assemble and run:
-;     nasm -fwin64 part_1.asm && gcc part_1.obj && a
+;     nasm -fwin64 part_2.asm && gcc part_2.obj && a
 ;
 ; NASM tutorial:
 ;     https://cs.lmu.edu/~ray/notes/nasmtutorial/
@@ -22,15 +22,17 @@
 fname:  db      './input.txt', 0                ; The input file path
 fmode:  db      'r', 0                          ; Open the file in 'read' mode
 txtend: db      'safe = %d', 0Ah, 0             ; Format for the last printf
-txts:   db      'row %d is safe', 0Ah, 0        ; Format for the printf that informs that a row is safe
-txtuns: db      'row %d is unsafe', 0Ah, 0      ; Format for the printf that informs that a row is unsafe
+txts:   db      'row %d is safe / %d', 0Ah, 0   ; Format for the printf that informs that a row is safe and the iteration
+txtuns: db      'row %d is unsafe / %d', 0Ah, 0 ; Format for the printf that informs that a row is unsafe and the iteration
 safe:   dd      0                               ; Total amount of safe rows
 rown:   dd      0                               ; Row number - stores the current row beign processed
 
         section .bss
 f:      resq    1                               ; Holds the file reference
 arr:    resb    16                              ; An array of up to 16 uint of 8 bits, where the row numbers will be stored
+arrcpy: resb    16                              ; An array of up to 16 uint of 8 bits, where the filtered array will be copied
 arrlen: resb    1                               ; The length of the array above
+iter:   resb    1                               ; The iteration run -- when removing elements from the array, it indicates the position 1-indexed to be removed
 
         section .text
 main:
@@ -42,6 +44,7 @@ main:
         mov     [f], rax                        ; [f] <- file reference
 loadRow:
         inc     dword [rown]                    ; Increment row number
+        mov     byte [iter], 0                  ; Initialize iterations/tries at 0
         lea     r12, [arr]                      ; Initialize base in non-volatile register
         mov     r13, 0                          ; Initialize index in non-volatile register
         mov     byte [r12+r13], 0               ; Set first element to 0
@@ -67,10 +70,20 @@ saveNumber:
         mov     byte [r12+r13], cl              ; Save the number
         jmp     readNumber                      ; Read next number
 processRow:
-        inc     r13                             ; Add one to the index
-        mov     byte [arrlen], r13b             ; Save index+1 as the length of the array
-        lea     rcx,  [arr]                     ; {safetyCheck} rcx <- arr reference
-        movzx   rdx,  r13b                      ; {safetyCheck} rdx <- r13b = arr length
+        inc     r13                             ; Add one to the index to get the length of the array
+processRowLoop:
+        cmp     byte [iter], r13b               ; Does iter number exceeds the length of the array?
+        jg      loadRow                         ; If so, load next row (assumes "unsafe")
+        lea     rcx, [arr]                      ; {copyArray} rcx <- arr reference
+        lea     rdx, [arrcpy]                   ; {copyArray} rdx <- arrcpy reference
+        mov     r8, r13                         ; {copyArray} r8 <- r13 = arr length
+        movzx   r9, byte [iter]                 ; {copyArray} r9 <- [iter] = item to remove + 1
+        dec     r9                              ; {copyArray} r9 <- index of item to remove
+        sub     rsp,  28h                       ; {copyArray} Reserve the shadow space
+        call    copyArray                       ; {copyArray} rax <- copyArray(arr, arrcpy) = arrcpy length
+        add     rsp,  28h                       ; {copyArray} Remove shadow space
+        lea     rcx,  [arrcpy]                  ; {safetyCheck} rcx <- arrcpy reference
+        mov     rdx,  rax                       ; {safetyCheck} rdx <- rax = arrcpy length
         sub     rsp,  28h                       ; {safetyCheck} Reserve the shadow space
         call    safetyCheck                     ; {safetyCheck} rax <- safetyCheck(rcd, rdx) = safetyCheck(arr, arrlen)
         add     rsp,  28h                       ; {safetyCheck} Remove shadow space
@@ -78,15 +91,18 @@ processRow:
         je      isSafe                          ; Then jump -- otherwise, print "unsafe"
         mov     rcx, txtuns                     ; {printf} rcx <- txtuns
         movsx   rdx, dword [rown]               ; {printf} rdx <- [rown]
+        movsx   r8, byte [iter]                 ; {printf} r8 <- [iter]
         sub     rsp, 28h                        ; {printf} Reserve the shadow space
-        call    printf                          ; {printf} printf(rcx, rdx) = printf(txtuns, rown)
+        call    printf                          ; {printf} printf(rcx, rdx, r8) = printf(txtuns, rown, iter)
         add     rsp, 28h                        ; {printf} Remove shadow space
-        jmp     loadRow                         ; Load next row
+        inc     byte [iter]                     ; Increments iteration
+        jmp     processRowLoop                  ; Try again
 isSafe:
         mov     rcx, txts                       ; {printf} rcx <- txts
         movsx   rdx, dword [rown]               ; {printf} rdx <- [rown]
+        movsx   r8, byte [iter]                 ; {printf} r8 <- [iter]
         sub     rsp, 28h                        ; {printf} Reserve the shadow space
-        call    printf                          ; {printf} printf(rcx, rdx) = printf(txts, rown)
+        call    printf                          ; {printf} printf(rcx, rdx, r8) = printf(txtuns, rown, iter)
         add     rsp, 28h                        ; {printf} Remove shadow space
         inc     dword [safe]                    ; Increment safe total
         jmp     loadRow                         ; Load next row
@@ -140,4 +156,31 @@ safetyCheck:
         pop     r8                              ; Restore registers
         pop     rcx                             ;
         pop     rbx                             ;
+        ret
+
+
+; Copies array from one place to another, ignoring one value
+; rcx = source array
+; rdx = destiny array
+; r8 = array length
+; r9 = index to omit
+; rax = length of the new array
+copyArray:
+        push    rsi                             ; Save registers
+        push    rdi                             ;
+        mov     rsi, 0                          ; Initialize source index
+        mov     rdi, 0                          ; Initialize destiny index
+.loop:
+        cmp     rsi, r9                         ; Check if the index equals the item to omit
+        je      copyArray.omit                  ; If so, omit
+        mov     al, byte [rcx+rsi]              ; If not, copy register
+        mov     byte [rdx+rdi], al              ;
+        inc     rdi                             ; Increment destiny index
+.omit:
+        inc     rsi                             ; Increment source index
+        cmp     rsi, r8                         ; Check if it reached the end of array
+        jne     copyArray.loop                  ;
+        mov     rax, rdi                        ; rax <- rdi = destiny array length
+        pop     rdi                             ; Restore registers
+        pop     rsi                             ;
         ret
