@@ -7,7 +7,7 @@
 | --- | ----------------------------------------------------------- | :-------------------------------------------------------------: |
 | 1   | [`Historian Hysteria`](https://adventofcode.com/2024/day/1) |    JavaScript [⭐](2024/01/part_1.js)[⭐](2024/01/part_2.js)    |
 | 2   | [`Red-Nosed Reports`](https://adventofcode.com/2024/day/2)  | Win64 Assembly [⭐](2024/02/part_1.asm)[⭐](2024/02/part_2.asm) |
-| 3   |                                                             |                                                                 |
+| 3   | [`Mull It Over`](https://adventofcode.com/2024/day/3)       |      VHDL [⭐](2024/03/part_1.vhd)[⭐](2024/03/part_2.vhd)      |
 | 4   |                                                             |                                                                 |
 | 5   |                                                             |                                                                 |
 | 6   |                                                             |                                                                 |
