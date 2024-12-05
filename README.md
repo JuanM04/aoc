@@ -9,7 +9,7 @@
 | 2   | [`Red-Nosed Reports`](https://adventofcode.com/2024/day/2)  | Win64 Assembly [⭐](2024/02/part_1.asm)[⭐](2024/02/part_2.asm) |
 | 3   | [`Mull It Over`](https://adventofcode.com/2024/day/3)       |      VHDL [⭐](2024/03/part_1.vhd)[⭐](2024/03/part_2.vhd)      |
 | 4   | [`Ceres Search`](https://adventofcode.com/2024/day/4)       |       MATLAB [⭐](2024/04/part_1.m)[⭐](2024/04/part_2.m)       |
-| 5   |                                                             |                                                                 |
+| 5   | [`Print Queue`](https://adventofcode.com/2024/day/5)        |          Microsoft Excel [⭐⭐](2024/05/solution.xlsx)          |
 | 6   |                                                             |                                                                 |
 | 7   |                                                             |                                                                 |
 | 8   |                                                             |                                                                 |
